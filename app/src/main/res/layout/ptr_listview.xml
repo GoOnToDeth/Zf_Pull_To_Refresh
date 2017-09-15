@@ -10,7 +10,10 @@
     <com.wzf.ptr.PtrLinearLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:ptr_duration_to_close_header="1000"
+        app:ptr_ratio_refuse_requirement="1.5"
+        app:ptr_resistance="2.5">
 
         <ListView
             android:id="@+id/listview"

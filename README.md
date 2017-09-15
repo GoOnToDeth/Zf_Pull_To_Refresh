@@ -5,7 +5,8 @@ PtrLinearLayout同时也支持自定义Header样式，下面详细介绍。
 
  
  ## APK下载
-* [下载地址]() 
+ 
+* [下载地址](https://raw.githubusercontent.com/GoOnToDeth/Zf_Pull_To_Refresh/master/zf_ptr_demo.apk) 
 * 二维码下载
 
 ![](https://github.com/GoOnToDeth/Zf_Pull_To_Refresh/blob/master/imgaes/qrcode.png)
@@ -62,7 +63,7 @@ PtrLinearLayout同时也支持自定义Header样式，下面详细介绍。
 ```
 
 ## 自定义Header
-如果没有设置header，该库有个默认的Header类DefaultHeader，需要自定义Header时候，必须实现PtrHeader接口。
+如果没有设置header，该库有个默认的Header类DefaultHeader，需要自定义Header时候，必须实现PtrHeader接口，并调用setHeader方法。
 ``` Java
 public interface PtrHeader {
 
@@ -125,3 +126,17 @@ public interface PtrHeader {
 ```
 
 > 注意：刷新完成后必须调用 view.completeRefuse(); 以通知UI视图刷新。
+
+# 常见问题
+
+ * 处理ViewPager手势冲突，
+  ``` Java
+   ptrLinearLayout.setEnableDisVerification(true);
+  ```
+ 
+ # 联系方式和问题建议
+ 
+ E-mail: wangzf0342@qq.com
+ 
+ Blog: http://blog.csdn.net/coder_giser
+

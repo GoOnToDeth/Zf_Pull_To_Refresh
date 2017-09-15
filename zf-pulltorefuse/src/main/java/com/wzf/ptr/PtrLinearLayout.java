@@ -408,4 +408,20 @@ public class PtrLinearLayout extends PtrLayout {
             postInvalidate();
         }
     }
+
+
+    // *********************************设置自定义属性******************************* //
+
+
+    public void setResistance(float resistance) {
+        this.resistance = resistance;
+    }
+
+    public void setRatioOfHeaderHeightToRefresh(float ratioOfHeaderHeightToRefresh) {
+        mRatioOfHeaderHeightToRefresh = ratioOfHeaderHeightToRefresh;
+    }
+
+    public void setDurationCloseHeader(int durationCloseHeader) {
+        mDurationCloseHeader = durationCloseHeader;
+    }
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="PtrLinearLayout">
+        <!-- 下拉阻尼系数（默认是2.0） -->
+        <attr name="ptr_resistance" format="float"/>
+        <!-- 执行刷新的最低高度和当前Header高度的比例(默认是1.0) -->
+        <attr name="ptr_ratio_refuse_requirement" format="float"/>
+        <!-- 指定刷新完成后Header收起(默认是600ms) -->
+        <attr name="ptr_duration_to_close_header" format="integer"/>
+        <!-- 是否支持下拉刷新(默认是true) -->
+        <attr name="ptr_pull_to_fresh" format="boolean"/>
+    </declare-styleable>
+</resources>

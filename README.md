@@ -160,7 +160,7 @@ public interface PtrSpecialView {
 
 2. 如果有设置过PtrSpecialView，那么必须在刷新后根据需求显示指定视图，如内容视图，错误视图和空视图分别调用showContentView(),showErrorView()和showEmptyView();如果未设置PtrSpecialView则不需要去调用以上3个方法，因为在如果有设置过PtrSpecialView的init()方法里已经默认加载了内容视图；具体示例可以参考demo。
 
-3、showErrorView()和showEmptyView()方法有个多态方法，传递一个boolean值，若传递true，则在每次显示错误视图或空视图时都会调用PtrSpecialView中对应方法，具体可参考源码。
+3. showErrorView()和showEmptyView()方法有个多态方法，传递一个boolean值，若传递true，则在每次显示错误视图或空视图时都会调用PtrSpecialView中对应方法，具体可参考源码。
 
 
 # 常见问题

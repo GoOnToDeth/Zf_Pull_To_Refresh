@@ -20,6 +20,10 @@ PtrLinearLayout同时也支持自定义Header样式，下面详细介绍。
 
 ![](https://github.com/GoOnToDeth/Zf_Pull_To_Refresh/blob/master/imgaes/ptr_viewpager.gif)
 
+* ErrorView & EmptyView
+
+![](https://github.com/GoOnToDeth/Zf_Pull_To_Refresh/blob/master/imgaes/ptr_error_empty.gif)
+
 # 使用方式
 
 ## 自定义属性
@@ -103,6 +107,32 @@ public interface PtrHeader {
 ```
 > 具体示例可以参考DefaultHeader.java文件
 
+## 自定义ErrorView和EmptyView
+``` Java
+public interface PtrSpecialView {
+
+    /**
+     * 加载错误页面
+     *
+     * @param root
+     * @return
+     */
+    View geErrorView(PtrLayout root);
+
+    /**
+     * 加载空数据页面
+     *
+     * @param root
+     * @return
+     */
+    View geEmptyView(PtrLayout root);
+}
+```
+自定义一个实现类，参考com.wzf.ptrdemos.PtrSpecialViews
+``` Java
+ ptrLinearLayout.setPtrSpecialView(new PtrSpecialViews(this));
+```
+
 ## 处理刷新
 * 自动刷新
 ``` Java
@@ -125,7 +155,13 @@ public interface PtrHeader {
         });
 ```
 
-> 注意：刷新完成后必须调用 view.completeRefuse(); 以通知UI视图刷新。
+**注意：** 
+1. 刷新完成后必须调用 view.completeRefuse(); 以通知UI视图刷新。
+
+2. 如果有设置过PtrSpecialView，那么必须在刷新后根据需求显示指定视图，如内容视图，错误视图和空视图分别调用showContentView(),showErrorView()和showEmptyView();如果未设置PtrSpecialView则不需要去调用以上3个方法，因为在如果有设置过PtrSpecialView的init()方法里已经默认加载了内容视图；具体示例可以参考demo。
+
+3、showErrorView()和showEmptyView()方法有个多态方法，传递一个boolean值，若传递true，则在每次显示错误视图或空视图时都会调用PtrSpecialView中对应方法，具体可参考源码。
+
 
 # 常见问题
 

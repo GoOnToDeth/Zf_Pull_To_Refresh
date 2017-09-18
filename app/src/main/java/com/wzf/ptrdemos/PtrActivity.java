@@ -2,7 +2,6 @@ package com.wzf.ptrdemos;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Path;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
@@ -30,7 +29,7 @@ import java.util.List;
 /**
  * ===============================
  * 描    述：
- * 作    者：王智凡
+ * 作    者：wzf
  * 创建日期：2017/9/13 16:04
  * ===============================
  */
@@ -68,11 +67,15 @@ public class PtrActivity extends AppCompatActivity {
             case R.layout.ptr_viewpager:
                 setOutSideViewPager();
                 break;
+            case R.layout.ptr_error_empty:
+                setErrorEmnpt();
+                break;
         }
     }
 
     private void setListView() {
         final ListView listView = (ListView) findViewById(R.id.listview);
+        ptrLinearLayout.setPtrSpecialView(new PtrSpecialViews(this));
         ptrLinearLayout.setOnPtrListener(new OnPtrListener() {
             @Override
             public void onRefresh(final PtrLinearLayout view) {
@@ -184,6 +187,70 @@ public class PtrActivity extends AppCompatActivity {
             }
         };
         viewPager.setAdapter(pagerAdapter);
+    }
+
+    private int loadViewCode;
+
+    private void setErrorEmnpt() {
+        final ListView listView = (ListView) findViewById(R.id.listview);
+        ptrLinearLayout.setPtrSpecialView(new PtrSpecialViews(this));
+        ptrLinearLayout.setOnPtrListener(new OnPtrListener() {
+            @Override
+            public void onRefresh(final PtrLinearLayout view) {
+                view.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.completeRefuse();
+                        switch (loadViewCode) {
+                            case 0:
+                                ptrLinearLayout.showContentView();
+                                mStringList.clear();
+                                bindAdapter(listView);
+                                break;
+                            case 1:
+                                ptrLinearLayout.showErrorView();
+                                break;
+                            case 2:
+                                ptrLinearLayout.showEmptyView();
+                                break;
+                        }
+                    }
+                }, 1000);
+            }
+        });
+        ptrLinearLayout.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ptrLinearLayout.refuse();
+            }
+        }, 200);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(PtrActivity.this, "onItemClick---->>" + position, Toast.LENGTH_SHORT).show();
+            }
+        });
+        findViewById(R.id.btn_error).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadViewCode = 1;
+                ptrLinearLayout.refuse();
+            }
+        });
+        findViewById(R.id.btn_empty).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadViewCode = 2;
+                ptrLinearLayout.refuse();
+            }
+        });
+        findViewById(R.id.btn_reset).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadViewCode = 0;
+                ptrLinearLayout.refuse();
+            }
+        });
     }
 
     private void setRefuseListener() {

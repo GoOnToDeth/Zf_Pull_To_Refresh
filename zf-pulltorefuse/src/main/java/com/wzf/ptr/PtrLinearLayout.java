@@ -6,21 +6,16 @@ import android.os.Build;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.webkit.WebView;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.ScrollView;
 import android.widget.Scroller;
-import android.widget.Toast;
 
 import com.wzf.ptr.header.PtrHeader;
+import com.wzf.ptr.header.PtrSpecialView;
 import com.wzf.ptr.listener.OnPtrListener;
 
 /**
@@ -56,6 +51,7 @@ public class PtrLinearLayout extends PtrLayout {
     private static final String TAG = "info1";
 
     private PtrHeader iPtrHeader;
+    private PtrSpecialView iPtrSpecialView;
 
     /************* 自定义属性 ****************/
     // 下拉的阻尼系数
@@ -67,8 +63,11 @@ public class PtrLinearLayout extends PtrLayout {
     private boolean isEnablePtr;
 
 
-    private View mHeaderView;
-    private View mContentView;
+    protected View mHeaderView;
+    protected View mContentView;
+    protected View mErrorView;
+    protected View mEmptyView;
+
     // Header高度
     private int mHeaderHeight;
     // 允许刷新的高度
@@ -109,9 +108,8 @@ public class PtrLinearLayout extends PtrLayout {
 
     @Override
     protected void onFinishInflate() {
-        if (getChildCount() != 1) {
-            throw new ArrayIndexOutOfBoundsException("child count only be one.");
-        }
+        if (getChildCount() != 1)
+            throw new ArrayIndexOutOfBoundsException("PtrLinearLayout only has one child.");
         if (iPtrHeader == null) {
             iPtrHeader = new DefaultHeader(getContext());
         }
@@ -146,12 +144,14 @@ public class PtrLinearLayout extends PtrLayout {
                 }
             });
         } else {
-            (mContentView).setOnScrollChangeListener(new OnScrollChangeListener() {
-                @Override
-                public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                    isTop = v.getScrollY() == 0;
-                }
-            });
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                (mContentView).setOnScrollChangeListener(new OnScrollChangeListener() {
+                    @Override
+                    public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                        isTop = v.getScrollY() == 0;
+                    }
+                });
+            }
         }
     }
 
@@ -178,7 +178,8 @@ public class PtrLinearLayout extends PtrLayout {
                 extraDealt = this.mCurrentRefuseState == STATUS_REFRESHING ? mScroller.getFinalY() : 0;
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (Math.abs(y - lastY) > Math.abs(x - lastX)) {
+                if (!isEnableDisVerification ||
+                        (isEnableDisVerification && Math.abs(y - lastY) > Math.abs(x - lastX))) {
                     if (isTop) {
                         if ((y - lastY) > minDis) { // 下拉
                             return pullToBottom(event);
@@ -356,37 +357,6 @@ public class PtrLinearLayout extends PtrLayout {
         smoothScrollBy(dy);
     }
 
-    public void completeRefuse() {
-        this.iPtrHeader.onCompleteRefuse(this);
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                isTouchAtRefreshOver = isTouch;
-                if (!isTouchAtRefreshOver)
-                    resetScrollerPos();
-                mCurrentRefuseState = STATUS_PULL_REFUSE;
-            }
-        }, mDurationCloseHeader);
-    }
-
-    public void setOnPtrListener(OnPtrListener onPtrListener) {
-        this.mOnPtrListener = onPtrListener;
-    }
-
-    public void setHeader(PtrHeader iPtrHeader) {
-        this.iPtrHeader = iPtrHeader;
-    }
-
-    public void refuse() {
-        if (this.mCurrentRefuseState != STATUS_REFRESHING) {
-            startRefuse();
-        }
-    }
-
-    public void setEnableDisVerification(boolean enableDisVerification) {
-        isEnableDisVerification = enableDisVerification;
-    }
-
     @Override
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
@@ -407,6 +377,142 @@ public class PtrLinearLayout extends PtrLayout {
             }
             postInvalidate();
         }
+    }
+
+    /**
+     * 刷新完成
+     */
+    public void completeRefuse() {
+        this.iPtrHeader.onCompleteRefuse(this);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                isTouchAtRefreshOver = isTouch;
+                if (!isTouchAtRefreshOver)
+                    resetScrollerPos();
+                mCurrentRefuseState = STATUS_PULL_REFUSE;
+            }
+        }, mDurationCloseHeader);
+    }
+
+    /**
+     * 显示主视图
+     */
+    public void showContentView() {
+        if (getChildCount() != 2)
+            throw new ArrayIndexOutOfBoundsException("child count is error.");
+        if (this.mContentView == null)
+            throw new NullPointerException("mContentView is null.");
+        if (getChildAt(1) != this.mContentView) {
+            this.removeViewAt(1);
+            this.addView(mContentView);
+            this.requestLayout();
+        }
+    }
+
+    /**
+     * 显示错误页面
+     */
+    public void showErrorView() {
+        showErrorView(false);
+    }
+
+    /**
+     * 显示错误页面
+     *
+     * @param isNeedUpdate 是否需要每次调用都更新Error页面
+     */
+    public void showErrorView(boolean isNeedUpdate) {
+        if (getChildCount() != 2)
+            throw new ArrayIndexOutOfBoundsException("child count is error.");
+        if (iPtrSpecialView == null)
+            throw new NullPointerException("PtrSpecialView is null.");
+        if (iPtrSpecialView.geErrorView(this) == null)
+            throw new NullPointerException("PtrSpecialView.geErrorView() return null.");
+        if (getChildAt(1) == mErrorView) { // 已经添加了ErrorView
+            if (isNeedUpdate) {
+                // 更新最新的ErrorView
+                this.removeView(mErrorView);
+                this.mErrorView = iPtrSpecialView.geErrorView(this);
+                this.addView(mErrorView);
+                this.requestLayout();
+            }
+        } else {    // 第一次添加ErrorView
+            this.mErrorView = iPtrSpecialView.geErrorView(this);
+            this.removeViewAt(1);
+            this.addView(mErrorView);
+            this.requestLayout();
+        }
+    }
+
+    /**
+     * 显示无数据的页面
+     */
+    public void showEmptyView() {
+        showEmptyView(false);
+    }
+
+    /**
+     * 显示无数据的页面
+     *
+     * @param isNeedUpdate 是否需要每次调用都更新Empty页面
+     */
+    public void showEmptyView(boolean isNeedUpdate) {
+        if (getChildCount() != 2)
+            throw new ArrayIndexOutOfBoundsException("child count is error.");
+        if (iPtrSpecialView == null)
+            throw new NullPointerException("PtrSpecialView is null.");
+        if (iPtrSpecialView.geEmptyView(this) == null)
+            throw new NullPointerException("PtrSpecialView.geEmptyView() return null.");
+        if (getChildAt(1) == this.mEmptyView) { // 已经添加了ErrorView
+            if (isNeedUpdate) {
+                // 更新最新的ErrorView
+                this.removeView(mEmptyView);
+                this.mEmptyView = iPtrSpecialView.geEmptyView(this);
+                this.addView(mEmptyView);
+                this.requestLayout();
+            }
+        } else {    // 第一次添加ErrorView
+            this.mEmptyView = iPtrSpecialView.geEmptyView(this);
+            this.removeViewAt(1);
+            this.addView(mEmptyView);
+            this.requestLayout();
+        }
+    }
+
+    public void setOnPtrListener(OnPtrListener onPtrListener) {
+        this.mOnPtrListener = onPtrListener;
+    }
+
+    /**
+     * 设置自定义Header
+     *
+     * @param iPtrHeader
+     */
+    public void setHeader(PtrHeader iPtrHeader) {
+        this.iPtrHeader = iPtrHeader;
+    }
+
+    /**
+     * 设置特殊视图(错误页面和空页面)
+     *
+     * @param iPtrSpecialView
+     */
+    public void setPtrSpecialView(PtrSpecialView iPtrSpecialView) {
+        this.iPtrSpecialView = iPtrSpecialView;
+    }
+
+    /**
+     * 手动调用刷新
+     */
+    public void refuse() {
+        if (this.mCurrentRefuseState != STATUS_REFRESHING) {
+            startRefuse();
+        }
+    }
+
+    public void setEnableDisVerification(boolean enableDisVerification) {
+        isEnableDisVerification = enableDisVerification;
     }
 
 

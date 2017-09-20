@@ -11,7 +11,7 @@ import android.widget.ListView;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private String[] datas = {"ListView", "GridView", "ScrollView",
-            "TextView", "WebView", "外部嵌套ViewPager", "错误页面&空页面"};
+            "TextView", "WebView", "外部嵌套ViewPager", "错误页面&空页面", "RecyclerView"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             case 6:
                 intent.putExtra("layout", R.layout.ptr_error_empty);
+                break;
+            case 7:
+                intent.putExtra("layout", R.layout.ptr_recycleview);
                 break;
         }
         startActivity(intent);

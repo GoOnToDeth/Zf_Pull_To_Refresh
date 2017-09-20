@@ -13,7 +13,7 @@ import java.util.Random;
  */
 public class DataSource {
 
-    private int stepLength = 20;
+    private int stepLength = 50;
 
     private static DataSource sDataSource;
 

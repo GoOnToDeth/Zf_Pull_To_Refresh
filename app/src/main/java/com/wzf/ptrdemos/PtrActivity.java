@@ -7,7 +7,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
@@ -70,6 +73,9 @@ public class PtrActivity extends AppCompatActivity {
             case R.layout.ptr_error_empty:
                 setErrorEmnpt();
                 break;
+            case R.layout.ptr_recycleview:
+                setRecyclerView();
+                break;
         }
     }
 
@@ -84,7 +90,7 @@ public class PtrActivity extends AppCompatActivity {
                     public void run() {
                         view.completeRefuse();
                         mStringList.clear();
-                        bindAdapter(listView);
+                        bindAdapterForListView(listView);
                     }
                 }, 3000);
             }
@@ -113,7 +119,7 @@ public class PtrActivity extends AppCompatActivity {
                     public void run() {
                         view.completeRefuse();
                         mStringList.clear();
-                        bindAdapter(gridView);
+                        bindAdapterForListView(gridView);
                     }
                 }, 3000);
             }
@@ -205,7 +211,7 @@ public class PtrActivity extends AppCompatActivity {
                             case 0:
                                 ptrLinearLayout.showContentView();
                                 mStringList.clear();
-                                bindAdapter(listView);
+                                bindAdapterForListView(listView);
                                 break;
                             case 1:
                                 ptrLinearLayout.showErrorView();
@@ -253,6 +259,29 @@ public class PtrActivity extends AppCompatActivity {
         });
     }
 
+    private void setRecyclerView() {
+        final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        ptrLinearLayout.setOnPtrListener(new OnPtrListener() {
+            @Override
+            public void onRefresh(final PtrLinearLayout view) {
+                view.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        view.completeRefuse();
+                        recyclerView.setAdapter(new MyAdapter(DataSource.getInstance().getSource()));
+                    }
+                }, 3000);
+            }
+        });
+        ptrLinearLayout.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ptrLinearLayout.refuse();
+            }
+        }, 200);
+    }
+
     private void setRefuseListener() {
         ptrLinearLayout.setOnPtrListener(new OnPtrListener() {
             @Override
@@ -282,13 +311,52 @@ public class PtrActivity extends AppCompatActivity {
         return textView;
     }
 
-    private void bindAdapter(AbsListView absListView) {
+    private void bindAdapterForListView(AbsListView absListView) {
         mStringList.addAll(DataSource.getInstance().getSource());
         if (adapter == null) {
             adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mStringList);
             absListView.setAdapter(adapter);
         } else {
             adapter.notifyDataSetChanged();
+        }
+    }
+
+    class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+
+        private List<String> mData;
+
+        public MyAdapter(List<String> data) {
+            this.mData = data;
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            // 实例化展示的view
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_rv_item, parent, false);
+            // 实例化viewholder
+            ViewHolder viewHolder = new ViewHolder(v);
+            return viewHolder;
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            // 绑定数据
+            holder.mTv.setText(mData.get(position));
+        }
+
+        @Override
+        public int getItemCount() {
+            return mData == null ? 0 : mData.size();
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+
+            TextView mTv;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                mTv = (TextView) itemView.findViewById(R.id.item_tv);
+            }
         }
     }
 }

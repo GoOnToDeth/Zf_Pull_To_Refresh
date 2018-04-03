@@ -105,10 +105,12 @@ public class PtrLinearLayout extends PtrLayout {
         mDurationCloseHeader = arr.getInt(R.styleable.PtrLinearLayout_ptr_duration_to_close_header, 600);
         isEnablePtr = arr.getBoolean(R.styleable.PtrLinearLayout_ptr_pull_to_fresh, true);
         arr.recycle();
+        setClickable(true);
     }
 
     @Override
     protected void onFinishInflate() {
+        super.onFinishInflate();
         if (getChildCount() != 1)
             throw new ArrayIndexOutOfBoundsException("PtrLinearLayout only has one child.");
         if (iPtrHeader == null) {
@@ -178,9 +180,6 @@ public class PtrLinearLayout extends PtrLayout {
         int index = event.getActionIndex();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (!mScroller.isFinished()) {
-                    mScroller.abortAnimation();
-                }
                 this.isTouch = true;
                 this.isTouchAtRefreshOver = false;
                 this.yDown = y;
@@ -217,7 +216,6 @@ public class PtrLinearLayout extends PtrLayout {
                     resetScrollerPos();
                 }
                 mHasSendCancelEvent = false;
-                Log.i(TAG, "up-->" + y);
                 break;
         }
         this.lastX = x;
@@ -397,6 +395,7 @@ public class PtrLinearLayout extends PtrLayout {
             @Override
             public void run() {
                 isTouchAtRefreshOver = isTouch;
+                Log.e(TAG, "" + isTouchAtRefreshOver);
                 if (!isTouchAtRefreshOver)
                     resetScrollerPos();
                 mCurrentRefuseState = STATUS_PULL_REFUSE;

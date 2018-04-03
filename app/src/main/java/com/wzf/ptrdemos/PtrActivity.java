@@ -89,7 +89,7 @@ public class PtrActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         view.completeRefuse();
-                        mStringList.clear();
+//                        mStringList.clear();
                         bindAdapterForListView(listView);
                     }
                 }, 3000);
@@ -312,7 +312,8 @@ public class PtrActivity extends AppCompatActivity {
     }
 
     private void bindAdapterForListView(AbsListView absListView) {
-        mStringList.addAll(DataSource.getInstance().getSource());
+        if (mStringList.size() == 0)
+            mStringList.addAll(DataSource.getInstance().getSource());
         if (adapter == null) {
             adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mStringList);
             absListView.setAdapter(adapter);
